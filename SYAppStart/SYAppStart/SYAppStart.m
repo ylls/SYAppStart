@@ -30,7 +30,7 @@ static UIWindow *startImageWindow = nil;
         imageName = @"Default-568h.png";
     }else
     {
-         imageName = @"Default";
+         imageName = @"Default.png";
     }
     //使用 imageWithContentsOfFile 加载图片使用完以后及时释放资源
     NSString *imageFilePath = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath],imageName];
