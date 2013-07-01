@@ -1,5 +1,5 @@
 //
-//  SYAppStart.h version:0.7
+//  SYAppStart.h
 //  FEShareLib
 //
 //  Created by 余书懿 on 13-5-25.
@@ -23,7 +23,7 @@
  *	@brief	以默认动画效果隐藏App启动图片 
             请在首个Controller 的 viewWillAppear 里面执行 viewDidAppear 里面执行
  */
-+ (void)hide;
++ (void)hide:(BOOL)animated;
 
 /**
  *	@brief	以自定义隐藏动画的方式隐藏App启动图片
@@ -31,11 +31,17 @@
  */
 + (void)hideWithCustomBlock:(void(^)(UIImageView *imageView))block;
 
-
 /**
  *	@brief	清理,只在自定义动画时才需要调用
  */
 + (void)clear;
+
+/**
+ *	@brief	获取Default.png 自动判断iPhone 5
+ *
+ *	@return	image
+ */
++ (UIImage *)getDefaultImage;
 
 
 @end
