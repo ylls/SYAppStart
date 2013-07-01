@@ -22,7 +22,7 @@ static UIWindow *startImageWindow = nil;
         startImageWindow.backgroundColor = [UIColor clearColor];
         startImageWindow.userInteractionEnabled = NO;
         startImageWindow.windowLevel = UIWindowLevelStatusBar + 1; //必须加1
-        startImageWindow.rootViewController = [[UIViewController alloc] init];
+        startImageWindow.rootViewController = [[SYAppStartViewController alloc] init];
     }
     UIImageView *imageView = nil;
     imageView = [[UIImageView alloc] initWithImage:[self getDefaultImage]];
@@ -83,5 +83,21 @@ static UIWindow *startImageWindow = nil;
     return [UIImage imageWithContentsOfFile:imageFilePath];
 }
 
+
+
+
+@end
+
+
+@implementation SYAppStartViewController
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    return NO;
+}
+
+- (BOOL)shouldAutorotate {
+    return NO;
+}
 
 @end

@@ -1,5 +1,5 @@
 //
-//  SYAppStart.h version 0.8
+//  SYAppStart.h version 0.82
 //  FEShareLib
 //
 //  Created by 余书懿 on 13-5-25.
@@ -44,4 +44,17 @@
 + (UIImage *)getDefaultImage;
 
 
+
+
+
+
 @end
+
+/**
+ *	@brief	通过SYAppStartViewController 来确保SYAppStart始终保持竖屏状态启动
+ */
+@interface SYAppStartViewController : UIViewController
+
+
+@end
+
