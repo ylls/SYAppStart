@@ -42,7 +42,7 @@
 {
     if (!_isFirstDidAppear) {
         _isFirstDidAppear = YES;
-        [SYAppStart hide];
+        [SYAppStart hide:YES];
     }
 }
 

@@ -1,5 +1,5 @@
 //
-//  SYAppStart.h
+//  SYAppStart.h version 0.8
 //  FEShareLib
 //
 //  Created by 余书懿 on 13-5-25.
