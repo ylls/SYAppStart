@@ -35,6 +35,7 @@
 {
     if (!_isFirstWillAppear) {
         _isFirstWillAppear = YES;
+        [SYAppStart setUseLaunchScreen:NO];
         [SYAppStart show];
     }
 }
