@@ -35,7 +35,7 @@
 {
     if (!_isFirstWillAppear) {
         _isFirstWillAppear = YES;
-        [SYAppStart setUseLaunchScreen:NO];
+        [[SYAppStart config] setUseLaunchScreen:NO];
         [SYAppStart showWithImage:[UIImage imageNamed:@"Secrren"]];
     }
 }

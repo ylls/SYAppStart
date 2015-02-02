@@ -18,24 +18,38 @@
 @interface SYWindow : UIWindow
 @end
 
+
+@implementation SYAppStartConfig
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.launchImageName = @"LaunchImage";
+        self.launchScreenName = @"LaunchScreen";
+        self.useLaunchScreen = YES;
+    }
+    return self;
+}
+
+@end
+
+
 @implementation SYAppStart
 
 
 #define Tag_appStartImageView 1314521
 
 static UIWindow *startImageWindow = nil;
-static NSString *SYLaunchImageName = @"LaunchImage";
-static BOOL SYLaunchImageUseLaunchScreen = YES;
+static SYAppStartConfig *appStartConfig = nil;
 
-+ (void)setLaunchImageName:(NSString *)launchImage
-{
-    SYLaunchImageName = launchImage;
++ (SYAppStartConfig *)config {
+    if (appStartConfig == nil) {
+        appStartConfig = [SYAppStartConfig new];
+    }
+    return appStartConfig;
 }
 
-+ (void)setUseLaunchScreen:(BOOL)use
-{
-    SYLaunchImageUseLaunchScreen = use;
-}
 
 + (void)show{
     [self showWithImage:nil];
@@ -99,7 +113,7 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
 
 + (UIView *)getDefaultLaunchView
 {
-    NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:@"LaunchScreen" owner:self options:nil];
+    NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:[SYAppStart config].launchScreenName owner:self options:nil];
     if (nibs.count > 0) {
         UIView *launchView = nibs[0];
         return launchView;
@@ -132,7 +146,7 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
         imageName = @"-700@2x.png";
     }
     
-    imageName = [SYLaunchImageName stringByAppendingString:imageName];
+    imageName = [[SYAppStart config].launchImageName stringByAppendingString:imageName];
     
     //使用 imageWithContentsOfFile 加载图片使用完以后及时释放资源
     NSString *imageFilePath = [NSString stringWithFormat:@"%@/%@", [[NSBundle mainBundle] bundlePath],imageName];
@@ -175,7 +189,7 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
 {
     [super viewDidLoad];
 
-    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0f && SYLaunchImageUseLaunchScreen) {
+    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0f && [SYAppStart config].useLaunchScreen) {
         UIView *launchView = [SYAppStart getDefaultLaunchView];
         [self.view addSubview:launchView];
         [launchView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight)];
