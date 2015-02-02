@@ -3,23 +3,19 @@
 //  FEShareLib
 //
 //  Created by 余书懿 on 13-5-25.
-//  Copyright (c) 2013年 豆豆集团. All rights reserved.
+//  Copyright (c) 2013年 DoudouApp. All rights reserved.
 //
 
 #import "SYAppStart.h"
 
-@interface SYWindow : UIWindow
-
+/**
+ *	@brief	通过SYAppStartViewController 来确保SYAppStart始终保持竖屏状态启动
+ */
+@interface SYAppStartViewController : UIViewController
+@property (nonatomic,strong) UIImage *customImage;
 @end
 
-@implementation SYWindow : UIWindow
-
-
-- (void)dealloc
-{
-    NSLog(@"%@ release",NSStringFromClass([self class]));
-}
-
+@interface SYWindow : UIWindow
 @end
 
 @implementation SYAppStart
@@ -41,24 +37,35 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
     SYLaunchImageUseLaunchScreen = use;
 }
 
-+ (void)show
++ (void)show{
+    [self showWithImage:nil];
+}
+
++ (void)showWithImage:(UIImage *)image
 {
     if (startImageWindow == nil) {
         startImageWindow = [[SYWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         startImageWindow.backgroundColor = [UIColor clearColor];
         startImageWindow.userInteractionEnabled = NO;
         startImageWindow.windowLevel = UIWindowLevelStatusBar + 1; //必须加1
-        startImageWindow.rootViewController = [[SYAppStartViewController alloc] init];
+        SYAppStartViewController *appStartViewController = [[SYAppStartViewController alloc] init];
+        appStartViewController.customImage = image;
+        startImageWindow.rootViewController = appStartViewController;
     }
 
     [startImageWindow setHidden:NO];
 }
-+ (void)hide:(BOOL)animated
+
++ (void)hide:(BOOL)animated {
+    [self hide:animated afterDelay:0.0];
+}
+
++ (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay
 {
     UIImageView *imageView = (UIImageView *)[startImageWindow viewWithTag:Tag_appStartImageView];
     if (imageView) {
         if (animated) {
-            [UIView animateWithDuration:1.5 delay:0 options:0 animations:^{
+            [UIView animateWithDuration:1.0 delay:delay options:0 animations:^{
                 [imageView setTransform:CGAffineTransformMakeScale(2, 2)];
                 [imageView setAlpha:0];
             } completion:^(BOOL finished) {
@@ -100,14 +107,14 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
     return nil;
 }
 
-+ (UIImage *)getDefaultImage:(UIInterfaceOrientation)orientation
++ (UIImage *)getDefaultLaunchImage:(UIInterfaceOrientation)orientation
 {
     NSString *imageName = nil;
     CGSize screenSize = [[UIScreen mainScreen] currentMode].size;
     //判断是否是iPhone5
     if (CGSizeEqualToSize(CGSizeMake(640, 1136), screenSize)) {
         imageName = @"-700-568h@2x.png";
-    }else if (CGSizeEqualToSize(CGSizeMake(640, 1136), screenSize))
+    }else if (CGSizeEqualToSize(CGSizeMake(750, 1334), screenSize))
     {
         imageName = @"-800-667h@2x.png";
     }else if (CGSizeEqualToSize(CGSizeMake(1242, 2208), screenSize))
@@ -140,6 +147,7 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
 @end
 
 
+
 @implementation SYAppStartViewController
 ////App Start 在显示的时候不需要状态, 在iOS 7隐藏状态栏 需要重写以下方法
 //- (BOOL)prefersStatusBarHidden
@@ -150,15 +158,17 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
 //{
 //    return UIStatusBarStyleLightContent;
 //}
-//- (BOOL)shouldAutorotate {
-//    return NO;
-//}
 
 
-//- (NSUInteger)supportedInterfaceOrientations
-//{
-//    return UIInterfaceOrientationMaskPortrait;
-//}
+- (BOOL)shouldAutorotate {
+    return NO;
+}
+
+
+- (NSUInteger)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskPortrait;
+}
 
 
 - (void)viewDidLoad
@@ -170,15 +180,31 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
         [self.view addSubview:launchView];
         [launchView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight)];
         [launchView setFrame:self.view.bounds];
-        launchView.tag = Tag_appStartImageView;
     }else if ([[UIDevice currentDevice].systemVersion floatValue] >= 7.0f) {
         UIImageView *imageView = nil;
-        imageView = [[UIImageView alloc] initWithImage:[SYAppStart getDefaultImage:self.interfaceOrientation]];
-        imageView.tag = Tag_appStartImageView;
+        imageView = [[UIImageView alloc] initWithImage:[SYAppStart getDefaultLaunchImage:self.interfaceOrientation]];
         [self.view addSubview:imageView];
         [imageView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight)];
         [imageView setFrame:self.view.bounds];
     }
+    self.view.tag = Tag_appStartImageView;
+    
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        
+        if (self.customImage != nil) {
+            UIImageView *imageView = nil;
+            imageView = [[UIImageView alloc] initWithImage:self.customImage];
+            [imageView setFrame:self.view.bounds];
+            imageView.alpha = 0.0f;
+            [self.view addSubview:imageView];
+
+            [UIView animateWithDuration:0.25 animations:^{
+                imageView.alpha = 1.0f;
+            }];
+        }
+        
+    });
     
 }
 
@@ -188,7 +214,17 @@ static BOOL SYLaunchImageUseLaunchScreen = YES;
 
 }
 
+- (void)dealloc
+{
+    self.customImage = nil;
+    NSLog(@"%@ release",NSStringFromClass([self class]));
+}
 
+@end
+
+
+
+@implementation SYWindow : UIWindow
 
 
 - (void)dealloc

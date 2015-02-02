@@ -1,5 +1,5 @@
 //
-//  SYAppStart.h version 0.9
+//  SYAppStart.h version 0.92
 //  FEShareLib
 //
 //  Created by yushuyi on 13-5-25.
@@ -23,10 +23,19 @@
 + (void)show;
 
 /**
+ *  如果有首次启动的广告闪屏需求 请通过此方法传入需要显示图片 并 调用 hide 设定 afterDelay
+ *
+ *  @param image image
+ */
++ (void)showWithImage:(UIImage *)image;
+
+
+/**
  *		以默认动画效果隐藏App启动图片 
             请在首个Controller 的 viewWillAppear 里面执行 viewDidAppear 里面执行
  */
 + (void)hide:(BOOL)animated;
++ (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay;
 
 /**
  *		以自定义隐藏动画的方式隐藏App启动图片
@@ -39,12 +48,17 @@
  */
 + (void)clear;
 
+
+
+
+
+
 /**
  *		获取Default.png 自动判断iPhone 5
  *
  *	@return	image
  */
-+ (UIImage *)getDefaultImage:(UIInterfaceOrientation)orientation;
++ (UIImage *)getDefaultLaunchImage:(UIInterfaceOrientation)orientation;
 
 
 /**
@@ -57,11 +71,5 @@
 
 @end
 
-/**
- *	@brief	通过SYAppStartViewController 来确保SYAppStart始终保持竖屏状态启动
- */
-@interface SYAppStartViewController : UIViewController
 
-
-@end
 

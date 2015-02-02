@@ -7,12 +7,14 @@
 //
 
 #import "AppDelegate.h"
+#import "SYAppStart.h"
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [[UIApplication sharedApplication] setStatusBarHidden:NO];
+  
     return YES;
 }
 							

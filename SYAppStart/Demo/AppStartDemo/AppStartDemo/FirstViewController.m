@@ -36,14 +36,14 @@
     if (!_isFirstWillAppear) {
         _isFirstWillAppear = YES;
         [SYAppStart setUseLaunchScreen:NO];
-        [SYAppStart show];
+        [SYAppStart showWithImage:[UIImage imageNamed:@"Secrren"]];
     }
 }
 - (void)viewDidAppear:(BOOL)animated
 {
     if (!_isFirstDidAppear) {
         _isFirstDidAppear = YES;
-        [SYAppStart hide:YES];
+        [SYAppStart hide:YES afterDelay:2.0];
     }
 }
 
