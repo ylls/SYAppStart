@@ -61,7 +61,15 @@ static SYAppStartConfig *appStartConfig = nil;
         startImageWindow = [[SYWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         startImageWindow.backgroundColor = [UIColor clearColor];
         startImageWindow.userInteractionEnabled = NO;
-        startImageWindow.windowLevel = UIWindowLevelStatusBar + 1; //必须加1
+        
+        if ([UIApplication sharedApplication].statusBarHidden) {
+            startImageWindow.windowLevel = UIWindowLevelStatusBar + 1;
+        }else {
+            startImageWindow.windowLevel = UIWindowLevelStatusBar - 1;
+        }
+        
+        
+        
         SYAppStartViewController *appStartViewController = [[SYAppStartViewController alloc] init];
         appStartViewController.customImage = image;
         startImageWindow.rootViewController = appStartViewController;
