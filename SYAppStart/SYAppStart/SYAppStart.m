@@ -32,6 +32,11 @@
     return self;
 }
 
+- (void)dealloc
+{
+    NSLog(@"%@ release",NSStringFromClass([self class]));
+}
+
 @end
 
 
@@ -61,15 +66,8 @@ static SYAppStartConfig *appStartConfig = nil;
         startImageWindow = [[SYWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         startImageWindow.backgroundColor = [UIColor clearColor];
         startImageWindow.userInteractionEnabled = NO;
-        
-        if ([UIApplication sharedApplication].statusBarHidden) {
-            startImageWindow.windowLevel = UIWindowLevelStatusBar + 1;
-        }else {
-            startImageWindow.windowLevel = UIWindowLevelStatusBar - 1;
-        }
-        
-        
-        
+        startImageWindow.windowLevel = UIWindowLevelAlert + 1;
+
         SYAppStartViewController *appStartViewController = [[SYAppStartViewController alloc] init];
         appStartViewController.customImage = image;
         startImageWindow.rootViewController = appStartViewController;
@@ -117,6 +115,8 @@ static SYAppStartConfig *appStartConfig = nil;
     startImageWindow.rootViewController = nil;
     [startImageWindow removeFromSuperview];
     startImageWindow = nil;
+    appStartConfig.viewCustomBlock = nil;
+    appStartConfig = nil;
 }
 
 + (UIView *)getDefaultLaunchView
@@ -221,6 +221,9 @@ static SYAppStartConfig *appStartConfig = nil;
             imageView.alpha = 0.0f;
             [self.view addSubview:imageView];
 
+            if ([SYAppStart config].viewCustomBlock != nil) {
+                [SYAppStart config].viewCustomBlock(self.view);
+            }
             [UIView animateWithDuration:0.25 animations:^{
                 imageView.alpha = 1.0f;
             }];

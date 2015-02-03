@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-
+typedef void(^SYAppStartViewCustomBlock)(UIView *containerView);
 
 @interface SYAppStartConfig : NSObject
 
@@ -27,6 +27,10 @@
  *  在iOS8环境是否使用LaunchScreen 作为启动画面 Default YES
  */
 @property (nonatomic,assign) BOOL useLaunchScreen;
+
+
+@property (nonatomic,copy) SYAppStartViewCustomBlock viewCustomBlock;
+
 
 @end
 
