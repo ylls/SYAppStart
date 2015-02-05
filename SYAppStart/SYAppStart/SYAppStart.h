@@ -1,5 +1,5 @@
 //
-//  SYAppStart.h version 1.0
+//  SYAppStart.h version 1.1
 //  FEShareLib
 //
 //  Created by yushuyi on 13-5-25.
@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-typedef void(^SYAppStartViewCustomBlock)(UIView *containerView);
+typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainerView);
 
 @interface SYAppStartConfig : NSObject
 
@@ -57,6 +57,8 @@ typedef void(^SYAppStartViewCustomBlock)(UIView *containerView);
  *  @param image image
  */
 + (void)showWithImage:(UIImage *)image;
++ (void)showWithImage:(UIImage *)image hideAfterDelay:(NSTimeInterval)delay;
+
 
 /**
  *		以默认动画效果隐藏App启动图片 

@@ -56,8 +56,13 @@ static SYAppStartConfig *appStartConfig = nil;
 }
 
 
-+ (void)show{
++ (void)show {
     [self showWithImage:nil];
+}
+
++ (void)showWithImage:(UIImage *)image hideAfterDelay:(NSTimeInterval)delay {
+    [self showWithImage:image];
+    [self hide:YES afterDelay:delay];
 }
 
 + (void)showWithImage:(UIImage *)image
@@ -65,7 +70,7 @@ static SYAppStartConfig *appStartConfig = nil;
     if (startImageWindow == nil) {
         startImageWindow = [[SYWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         startImageWindow.backgroundColor = [UIColor clearColor];
-        startImageWindow.userInteractionEnabled = NO;
+        startImageWindow.userInteractionEnabled = YES;
         startImageWindow.windowLevel = UIWindowLevelAlert + 1;
 
         SYAppStartViewController *appStartViewController = [[SYAppStartViewController alloc] init];
@@ -85,12 +90,14 @@ static SYAppStartConfig *appStartConfig = nil;
     UIImageView *imageView = (UIImageView *)[startImageWindow viewWithTag:Tag_appStartImageView];
     if (imageView) {
         if (animated) {
-            [UIView animateWithDuration:1.0 delay:delay options:0 animations:^{
-                [imageView setTransform:CGAffineTransformMakeScale(2, 2)];
-                [imageView setAlpha:0];
-            } completion:^(BOOL finished) {
-                [SYAppStart clear];
-            }];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [UIView animateWithDuration:0.75 delay:0.0 options:0 animations:^{
+                    [imageView setTransform:CGAffineTransformMakeScale(2, 2)];
+                    [imageView setAlpha:0];
+                } completion:^(BOOL finished) {
+                    [SYAppStart clear];
+                }];
+            });
         }else
         {
             [SYAppStart clear];
@@ -211,25 +218,28 @@ static SYAppStartConfig *appStartConfig = nil;
     }
     self.view.tag = Tag_appStartImageView;
     
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    if (self.customImage != nil) {
         
-        if (self.customImage != nil) {
-            UIImageView *imageView = nil;
-            imageView = [[UIImageView alloc] initWithImage:self.customImage];
-            [imageView setFrame:self.view.bounds];
-            imageView.alpha = 0.0f;
-            [self.view addSubview:imageView];
-
-            if ([SYAppStart config].viewCustomBlock != nil) {
-                [SYAppStart config].viewCustomBlock(self.view);
-            }
-            [UIView animateWithDuration:0.25 animations:^{
-                imageView.alpha = 1.0f;
-            }];
+        UIView *imageContainerView = [[UIView alloc] initWithFrame:self.view.bounds];
+        [imageContainerView setBackgroundColor:[UIColor clearColor]];
+        imageContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        imageContainerView.alpha = 0.0f;
+        [self.view addSubview:imageContainerView];
+        
+        UIImageView *imageView = [[UIImageView alloc] initWithImage:self.customImage];
+        [imageView setFrame:imageContainerView.bounds];
+        imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [imageView setBackgroundColor:[UIColor clearColor]];
+        [imageContainerView addSubview:imageView];
+        
+        if ([SYAppStart config].viewCustomBlock != nil) {
+            [SYAppStart config].viewCustomBlock(self.view,imageContainerView);
         }
         
-    });
+        [UIView animateWithDuration:0.25 animations:^{
+            imageContainerView.alpha = 1.0f;
+        }];
+    }
     
 }
 
