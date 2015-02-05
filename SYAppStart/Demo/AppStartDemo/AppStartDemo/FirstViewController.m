@@ -40,11 +40,8 @@
     if (!_isFirstWillAppear) {
         _isFirstWillAppear = YES;
         [[SYAppStart config] setUseLaunchScreen:NO];
-        [[SYAppStart config] setViewCustomBlock:^(UIView *containerView){
+        [[SYAppStart config] setViewCustomBlock:^(UIView *rootView,UIView *imageContainerView){
         
-            UIView *view11 = [[UIView alloc] initWithFrame:(CGRect){{0,0  },{50,50}}];
-            [view11 setBackgroundColor:[UIColor redColor]];
-            [containerView addSubview:view11];
         }];
         [SYAppStart showWithImage:[UIImage imageNamed:@"Secrren"]];
     }
