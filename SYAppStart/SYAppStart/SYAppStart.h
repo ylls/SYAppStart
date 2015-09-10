@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+
+
 typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainerView);
 
 @interface SYAppStartConfig : NSObject

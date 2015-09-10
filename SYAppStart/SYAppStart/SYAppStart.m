@@ -2,11 +2,13 @@
 //  SYAppStart.m
 //  FEShareLib
 //
-//  Created by 余书懿 on 13-5-25.
+//  Created by yushuyi on 13-5-25.
 //  Copyright (c) 2013年 DoudouApp. All rights reserved.
 //
 
 #import "SYAppStart.h"
+
+BOOL const SYAppStartMonitorRelease = NO;
 
 /**
  *	@brief	通过SYAppStartViewController 来确保SYAppStart始终保持竖屏状态启动
@@ -34,7 +36,9 @@
 
 - (void)dealloc
 {
-    NSLog(@"%@ release",NSStringFromClass([self class]));
+    if (SYAppStartMonitorRelease) {
+        NSLog(@"%@ release",NSStringFromClass([self class]));
+    }
 }
 
 @end
@@ -91,8 +95,8 @@ static SYAppStartConfig *appStartConfig = nil;
     if (imageView) {
         if (animated) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [UIView animateWithDuration:0.75 delay:0.0 options:0 animations:^{
-                    [imageView setTransform:CGAffineTransformMakeScale(2, 2)];
+                [UIView animateWithDuration:0.65 delay:0.0 options:0 animations:^{
+                    [imageView setTransform:CGAffineTransformMakeScale(1.5, 1.5)];
                     [imageView setAlpha:0];
                 } completion:^(BOOL finished) {
                     [SYAppStart clear];
@@ -119,6 +123,7 @@ static SYAppStartConfig *appStartConfig = nil;
 {
     UIImageView *imageView = (UIImageView *)[startImageWindow viewWithTag:Tag_appStartImageView];
     [imageView removeFromSuperview];
+    startImageWindow.userInteractionEnabled = NO;
     startImageWindow.rootViewController = nil;
     [startImageWindow removeFromSuperview];
     startImageWindow = nil;
@@ -179,10 +184,10 @@ static SYAppStartConfig *appStartConfig = nil;
 
 @implementation SYAppStartViewController
 ////App Start 在显示的时候不需要状态, 在iOS 7隐藏状态栏 需要重写以下方法
-//- (BOOL)prefersStatusBarHidden
-//{
-//    return NO;
-//}
+- (BOOL)prefersStatusBarHidden
+{
+    return NO;
+}
 //- (UIStatusBarStyle)preferredStatusBarStyle
 //{
 //    return UIStatusBarStyleLightContent;
@@ -194,7 +199,7 @@ static SYAppStartConfig *appStartConfig = nil;
 }
 
 
-- (NSUInteger)supportedInterfaceOrientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return UIInterfaceOrientationMaskPortrait;
 }
@@ -252,7 +257,9 @@ static SYAppStartConfig *appStartConfig = nil;
 - (void)dealloc
 {
     self.customImage = nil;
-    NSLog(@"%@ release",NSStringFromClass([self class]));
+    if (SYAppStartMonitorRelease) {
+        NSLog(@"%@ release",NSStringFromClass([self class]));
+    }
 }
 
 @end
@@ -264,7 +271,9 @@ static SYAppStartConfig *appStartConfig = nil;
 
 - (void)dealloc
 {
-    NSLog(@"%@ release",NSStringFromClass([self class]));
+    if (SYAppStartMonitorRelease) {
+        NSLog(@"%@ release",NSStringFromClass([self class]));
+    }
 }
 
 @end
