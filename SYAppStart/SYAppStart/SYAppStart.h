@@ -1,5 +1,5 @@
 //
-//  SYAppStart.h version 1.1
+//  SYAppStart.h version 2.0 beta
 //  FEShareLib
 //
 //  Created by yushuyi on 13-5-25.
@@ -8,10 +8,17 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-
+#import <AVFoundation/AVFoundation.h>
 
 
 typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainerView);
+typedef void(^SYAppStartHideCustomBlock)(UIView *containerView);
+
+typedef NS_ENUM(NSInteger, SYAppStartResourceType) {
+    SYAppStartResourceTypeImage NS_ENUM_AVAILABLE_IOS(7.0) = 0,
+    SYAppStartResourceTypeXib NS_ENUM_AVAILABLE_IOS(8.0),
+    SYAppStartResourceTypeStoryboard NS_ENUM_AVAILABLE_IOS(8.0)
+};
 
 @interface SYAppStartConfig : NSObject
 
@@ -21,16 +28,23 @@ typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainer
 @property (nonatomic,copy) NSString *launchImageName;
 
 /**
- *  iOS 8 Launch Screen 的 名字 Default LaunchScreen
+ *  iOS 8 Launch Screen.xib 的 名字 Default LaunchScreen
  */
 @property (nonatomic,copy) NSString *launchScreenName;
 
 /**
- *  在iOS8环境是否使用LaunchScreen 作为启动画面 Default YES
+ *  iOS 8 Launch Screen.storyboard 的 名字 Default LaunchScreen
  */
-@property (nonatomic,assign) BOOL useLaunchScreen;
+@property (nonatomic,copy) NSString *launchScreenStoryboardName;
 
+/**
+ *  SYAppStart加载的资源类型 Defualt 是以加载Asset Catalog 的 Launch 图片的方式 在iOS8以后可以使用 Xib 或者 Storyboard
+ */
+@property (nonatomic,assign) SYAppStartResourceType resourceType;
 
+/**
+ *  在呈现视图上面 进行 自定义代码和样式的添加
+ */
 @property (nonatomic,copy) SYAppStartViewCustomBlock viewCustomBlock;
 
 
@@ -41,15 +55,15 @@ typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainer
 @interface SYAppStart : NSObject
 
 /**
- *  SYAppStart 配置信息
+ *  SYAppStart 配置信息 调用此函数进行修改配置信息
  *
  *  @return 返回配置实例
  */
 + (SYAppStartConfig *)config;
 
 /**
- *		显示App启动插画 保持与启动时效果的一致 自动匹配iPhone 5尺寸的启动图片 
-            请在首个Controller 的 viewWillAppear 里面执行
+ *	显示App启动插画 保持与启动时效果的一致
+ *  在首个Controller 的 viewWillAppear 里面执行
  *
  */
 + (void)show;
@@ -61,6 +75,8 @@ typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainer
 + (void)showWithImage:(UIImage *)image;
 + (void)showWithImage:(UIImage *)image hideAfterDelay:(NSTimeInterval)delay;
 
+//Show Video
++ (void)showWithVideo:(AVPlayerItem *)playerItem;
 
 /**
  *		以默认动画效果隐藏App启动图片 
@@ -68,17 +84,13 @@ typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainer
  */
 + (void)hide:(BOOL)animated;
 + (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay;
++ (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay customBlock:(SYAppStartHideCustomBlock)block;
 /**
  *		以自定义隐藏动画的方式隐藏App启动图片
             请在首个Controller 的 viewWillAppear 里面执行 viewDidAppear 里面执行
+        Block 在动画中执行
  */
-+ (void)hideWithCustomBlock:(void(^)(UIImageView *imageView))block;
-
-
-/**
- *		清理,只在自定义动画时才需要调用
- */
-+ (void)clear;
++ (void)hideWithCustomBlock:(SYAppStartHideCustomBlock)block;
 
 
 

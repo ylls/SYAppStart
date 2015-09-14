@@ -8,48 +8,29 @@
 
 #import "SYAppStart.h"
 
-BOOL const SYAppStartMonitorRelease = NO;
 
-/**
- *	@brief	通过SYAppStartViewController 来确保SYAppStart始终保持竖屏状态启动
- */
+
+BOOL const SYAppStartMonitorRelease = true;
+
+
 @interface SYAppStartViewController : UIViewController
+
 @property (nonatomic,strong) UIImage *customImage;
+@property (nonatomic,strong) AVPlayerItem *videoPlayerItem;
+@property (nonatomic,strong) AVPlayer *videoPlayer;
+@property (nonatomic,strong) AVPlayerLayer *videoPlayerLayer;
+
 @end
 
 @interface SYWindow : UIWindow
 @end
-
-
-@implementation SYAppStartConfig
-
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        self.launchImageName = @"LaunchImage";
-        self.launchScreenName = @"LaunchScreen";
-        self.useLaunchScreen = YES;
-    }
-    return self;
-}
-
-- (void)dealloc
-{
-    if (SYAppStartMonitorRelease) {
-        NSLog(@"%@ release",NSStringFromClass([self class]));
-    }
-}
-
-@end
-
 
 @implementation SYAppStart
 
 
 #define Tag_appStartImageView 1314521
 
-static UIWindow *startImageWindow = nil;
+static UIWindow *appStartWindow = nil;
 static SYAppStartConfig *appStartConfig = nil;
 
 + (SYAppStartConfig *)config {
@@ -64,76 +45,101 @@ static SYAppStartConfig *appStartConfig = nil;
     [self showWithImage:nil];
 }
 
-+ (void)showWithImage:(UIImage *)image hideAfterDelay:(NSTimeInterval)delay {
-    [self showWithImage:image];
-    [self hide:YES afterDelay:delay];
-}
-
 + (void)showWithImage:(UIImage *)image
 {
-    if (startImageWindow == nil) {
-        startImageWindow = [[SYWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        startImageWindow.backgroundColor = [UIColor clearColor];
-        startImageWindow.userInteractionEnabled = YES;
-        startImageWindow.windowLevel = UIWindowLevelAlert + 1;
+    [self showWithImage:image hideAfterDelay:0];
+}
 
-        SYAppStartViewController *appStartViewController = [[SYAppStartViewController alloc] init];
-        appStartViewController.customImage = image;
-        startImageWindow.rootViewController = appStartViewController;
++ (void)showWithImage:(UIImage *)image hideAfterDelay:(NSTimeInterval)delay {
+    SYAppStartViewController *appStartViewController = [[SYAppStartViewController alloc] init];
+    appStartViewController.customImage = image;
+    [self showWithStartController:appStartViewController];
+    if (delay > 0) {
+        [self hide:YES afterDelay:delay];
     }
+}
 
-    [startImageWindow setHidden:NO];
++ (void)showWithVideo:(AVPlayerItem *)playerItem {
+    SYAppStartViewController *appStartViewController = [[SYAppStartViewController alloc] init];
+    appStartViewController.videoPlayerItem = playerItem;
+    [self showWithStartController:appStartViewController];
+}
+
++ (void)showWithStartController:(SYAppStartViewController *)viewController {
+    if (appStartWindow == nil) {
+        appStartWindow = [[SYWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+        appStartWindow.backgroundColor = [UIColor clearColor];
+        appStartWindow.userInteractionEnabled = YES;
+        appStartWindow.windowLevel = UIWindowLevelAlert + 1;
+        
+        appStartWindow.rootViewController = viewController;
+    }
+    
+    [appStartWindow setHidden:NO];
 }
 
 + (void)hide:(BOOL)animated {
     [self hide:animated afterDelay:0.0];
 }
 
-+ (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay
-{
-    UIImageView *imageView = (UIImageView *)[startImageWindow viewWithTag:Tag_appStartImageView];
-    if (imageView) {
-        if (animated) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [UIView animateWithDuration:0.65 delay:0.0 options:0 animations:^{
-                    [imageView setTransform:CGAffineTransformMakeScale(1.5, 1.5)];
-                    [imageView setAlpha:0];
-                } completion:^(BOOL finished) {
-                    [SYAppStart clear];
++ (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay {
+    [self hide:animated afterDelay:delay customBlock:nil];
+}
+
++ (void)hide:(BOOL)animated afterDelay:(NSTimeInterval)delay customBlock:(SYAppStartHideCustomBlock)block {
+    if (animated) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (block) {
+                [self hideWithCustomBlock:block];
+            }else {
+                [self hideWithCustomBlock:^(UIView *containerView) {
+                    [containerView setTransform:CGAffineTransformMakeScale(1.5, 1.5)];
+                    [containerView setAlpha:0];
                 }];
-            });
-        }else
-        {
+            }
+        });
+    }else
+    {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [SYAppStart clear];
-        }
+        });
     }
 }
 
-+ (void)hideWithCustomBlock:(void (^)(UIImageView *))block
-{
-    UIImageView *imageView = (UIImageView *)[startImageWindow viewWithTag:Tag_appStartImageView]; 
-    if (imageView) {
++ (void)hideWithCustomBlock:(SYAppStartHideCustomBlock)block {
+    UIView *containerView = [appStartWindow viewWithTag:Tag_appStartImageView];
+    if (containerView) {
         if (block) {
-            block(imageView);
+            [UIView animateWithDuration:0.65 delay:0.0 options:0 animations:^{
+                block(containerView);
+            } completion:^(BOOL finished) {
+                [SYAppStart clear];
+            }];
         }
     }
 }
 
 + (void)clear
 {
-    UIImageView *imageView = (UIImageView *)[startImageWindow viewWithTag:Tag_appStartImageView];
-    [imageView removeFromSuperview];
-    startImageWindow.userInteractionEnabled = NO;
-    startImageWindow.rootViewController = nil;
-    [startImageWindow removeFromSuperview];
-    startImageWindow = nil;
+    appStartWindow.userInteractionEnabled = NO; // iOS 7 才需要这行代码， iOS 7的 UIAlertView 在 show 以后 会持有 显示在最上层的Window。 在这种情况下，只能等UIAlertView释放。 这里才会自动释放
+    appStartWindow.rootViewController = nil;
+    [appStartWindow removeFromSuperview];
+    appStartWindow = nil;
     appStartConfig.viewCustomBlock = nil;
     appStartConfig = nil;
 }
 
 + (UIView *)getDefaultLaunchView
 {
-    NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:[SYAppStart config].launchScreenName owner:self options:nil];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *path = [mainBundle pathForResource:[self config].launchScreenName ofType:@"nib"];
+    if (!path){
+        NSString *errorDescription = [NSString stringWithFormat:@"没有找到名称为%@.xib的文件，请检查工程中是否启用了LaunchScreen",[self config].launchScreenName];
+        NSAssert(NO, errorDescription);
+        return nil;
+    }
+    
+    NSArray *nibs = [[NSBundle mainBundle] loadNibNamed:[self config].launchScreenName owner:self options:nil];
     if (nibs.count > 0) {
         UIView *launchView = nibs[0];
         return launchView;
@@ -141,9 +147,16 @@ static SYAppStartConfig *appStartConfig = nil;
     return nil;
 }
 
++ (UIViewController *)getDefaultLaunchStoryboardViewController
+{
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:[self config].launchScreenStoryboardName bundle:nil];
+    return [storyboard instantiateInitialViewController];
+}
+
+
 + (UIImage *)getDefaultLaunchImage:(UIInterfaceOrientation)orientation
 {
-    NSString *imageName = nil;
+    NSString *imageName = @"-700@2x.png";
     CGSize screenSize = [[UIScreen mainScreen] currentMode].size;
     //判断是否是iPhone5
     if (CGSizeEqualToSize(CGSizeMake(640, 1136), screenSize)) {
@@ -151,7 +164,7 @@ static SYAppStartConfig *appStartConfig = nil;
     }else if (CGSizeEqualToSize(CGSizeMake(750, 1334), screenSize))
     {
         imageName = @"-800-667h@2x.png";
-    }else if (CGSizeEqualToSize(CGSizeMake(1242, 2208), screenSize))
+    }else if (CGSizeEqualToSize(CGSizeMake(1242, 2208), screenSize) || CGSizeEqualToSize(CGSizeMake(1125, 2001), screenSize))
     {
         if (UIInterfaceOrientationIsLandscape(orientation)) {
             imageName = @"-800-Landscape-736h@3x.png";
@@ -183,16 +196,11 @@ static SYAppStartConfig *appStartConfig = nil;
 
 
 @implementation SYAppStartViewController
-////App Start 在显示的时候不需要状态, 在iOS 7隐藏状态栏 需要重写以下方法
+
 - (BOOL)prefersStatusBarHidden
 {
     return NO;
 }
-//- (UIStatusBarStyle)preferredStatusBarStyle
-//{
-//    return UIStatusBarStyleLightContent;
-//}
-
 
 - (BOOL)shouldAutorotate {
     return NO;
@@ -209,54 +217,90 @@ static SYAppStartConfig *appStartConfig = nil;
 {
     [super viewDidLoad];
 
-    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0f && [SYAppStart config].useLaunchScreen) {
-        UIView *launchView = [SYAppStart getDefaultLaunchView];
-        [self.view addSubview:launchView];
-        [launchView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight)];
-        [launchView setFrame:self.view.bounds];
-    }else if ([[UIDevice currentDevice].systemVersion floatValue] >= 7.0f) {
-        UIImageView *imageView = nil;
-        imageView = [[UIImageView alloc] initWithImage:[SYAppStart getDefaultLaunchImage:self.interfaceOrientation]];
-        [self.view addSubview:imageView];
-        [imageView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight)];
-        [imageView setFrame:self.view.bounds];
+    UIView *launchView = nil;
+    SYAppStartResourceType resourceType = [SYAppStart config].resourceType;
+    if (resourceType == SYAppStartResourceTypeXib) {
+        launchView = [SYAppStart getDefaultLaunchView];
+    }else if (resourceType == SYAppStartResourceTypeStoryboard) {
+        UIViewController *launchViewController = [SYAppStart getDefaultLaunchStoryboardViewController];
+        [self addChildViewController:launchViewController];
+        launchView = launchViewController.view;
+    }else if (resourceType == SYAppStartResourceTypeImage) {
+        UIImageView *imageView = [[UIImageView alloc] initWithImage:[SYAppStart getDefaultLaunchImage:[UIApplication sharedApplication].statusBarOrientation]];
+        launchView = imageView;
     }
+    [self.view addSubview:launchView];
+    [launchView setAutoresizingMask:(UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight)];
+    [launchView setFrame:self.view.bounds];
+    
     self.view.tag = Tag_appStartImageView;
     
+    UIView *containerView = [[UIView alloc] initWithFrame:self.view.bounds];
+    [containerView setBackgroundColor:[UIColor clearColor]];
+    containerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    containerView.alpha = 0.0f;
+    [self.view addSubview:containerView];
+    
     if (self.customImage != nil) {
-        
-        UIView *imageContainerView = [[UIView alloc] initWithFrame:self.view.bounds];
-        [imageContainerView setBackgroundColor:[UIColor clearColor]];
-        imageContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        imageContainerView.alpha = 0.0f;
-        [self.view addSubview:imageContainerView];
-        
         UIImageView *imageView = [[UIImageView alloc] initWithImage:self.customImage];
-        [imageView setFrame:imageContainerView.bounds];
+        [imageView setFrame:containerView.bounds];
         imageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         [imageView setBackgroundColor:[UIColor clearColor]];
-        [imageContainerView addSubview:imageView];
+        [containerView addSubview:imageView];
         
         if ([SYAppStart config].viewCustomBlock != nil) {
-            [SYAppStart config].viewCustomBlock(self.view,imageContainerView);
+            [SYAppStart config].viewCustomBlock(self.view,containerView);
         }
+    }else if (self.videoPlayerItem != nil){
+        AVPlayer *player = [AVPlayer playerWithPlayerItem:self.videoPlayerItem];
+        player.volume = 1.0f;
         
-        [UIView animateWithDuration:0.25 animations:^{
-            imageContainerView.alpha = 1.0f;
-        }];
+        AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:player];
+        playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        playerLayer.frame = containerView.layer.bounds;
+        [containerView.layer addSublayer:playerLayer];
+        self.videoPlayerLayer = playerLayer;
+        self.videoPlayer = player;
+        [player play];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playToEndTimeNotification:) name:AVPlayerItemDidPlayToEndTimeNotification object:player.currentItem];
     }
+    
+    [UIView animateWithDuration:0.25 animations:^{
+        containerView.alpha = 1.0f;
+    }];
     
 }
 
-- (void)viewWillDisappear:(BOOL)animated
-{
-    [super viewWillDisappear:animated];
-
-}
 
 - (void)dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     self.customImage = nil;
+    self.videoPlayerItem = nil;
+    self.videoPlayerLayer = nil;
+    self.videoPlayer = nil;
+    
+    if (SYAppStartMonitorRelease) {
+        NSLog(@"%@ release",NSStringFromClass([self class]));
+    }
+}
+
+
+- (void)playToEndTimeNotification:(NSNotification *)notification {
+    [self.videoPlayerLayer removeFromSuperlayer];
+    [SYAppStart hide:true];
+}
+
+
+@end
+
+
+
+@implementation SYWindow : UIWindow
+
+- (void)dealloc
+{
     if (SYAppStartMonitorRelease) {
         NSLog(@"%@ release",NSStringFromClass([self class]));
     }
@@ -265,9 +309,19 @@ static SYAppStartConfig *appStartConfig = nil;
 @end
 
 
+@implementation SYAppStartConfig
 
-@implementation SYWindow : UIWindow
-
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.launchImageName = @"LaunchImage";
+        self.launchScreenName = @"LaunchScreen";
+        self.launchScreenStoryboardName = @"LaunchScreen";
+        self.resourceType = SYAppStartResourceTypeXib;
+    }
+    return self;
+}
 
 - (void)dealloc
 {

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		220F05041BA66356004EADB5 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 220F05031BA66356004EADB5 /* AVFoundation.framework */; };
 		22B7C6B01A7A263700A96CFA /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 22B7C6AF1A7A263700A96CFA /* Images.xcassets */; };
 		22E693CC17506DAC00D61084 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22E693CB17506DAC00D61084 /* UIKit.framework */; };
 		22E693CE17506DAC00D61084 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22E693CD17506DAC00D61084 /* Foundation.framework */; };
@@ -25,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		220F05031BA66356004EADB5 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		22B7C6AF1A7A263700A96CFA /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		22E693C817506DAC00D61084 /* AppStartDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AppStartDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		22E693CB17506DAC00D61084 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -54,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				220F05041BA66356004EADB5 /* AVFoundation.framework in Frameworks */,
 				22E693CC17506DAC00D61084 /* UIKit.framework in Frameworks */,
 				22E693CE17506DAC00D61084 /* Foundation.framework in Frameworks */,
 				22E693D017506DAC00D61084 /* CoreGraphics.framework in Frameworks */,
@@ -84,6 +87,7 @@
 		22E693CA17506DAC00D61084 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				220F05031BA66356004EADB5 /* AVFoundation.framework */,
 				22E693CB17506DAC00D61084 /* UIKit.framework */,
 				22E693CD17506DAC00D61084 /* Foundation.framework */,
 				22E693CF17506DAC00D61084 /* CoreGraphics.framework */,

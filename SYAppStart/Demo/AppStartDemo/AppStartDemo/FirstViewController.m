@@ -39,7 +39,7 @@
     
     if (!_isFirstWillAppear) {
         _isFirstWillAppear = YES;
-        [[SYAppStart config] setUseLaunchScreen:NO];
+        [[SYAppStart config] setResourceType:(SYAppStartResourceTypeImage)];
         [[SYAppStart config] setViewCustomBlock:^(UIView *rootView,UIView *imageContainerView){
         
         }];
