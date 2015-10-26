@@ -10,7 +10,7 @@
 
 
 
-BOOL const SYAppStartMonitorRelease = true;
+BOOL const SYAppStartMonitorRelease = false;
 
 
 @interface SYAppStartViewController : UIViewController
@@ -18,11 +18,14 @@ BOOL const SYAppStartMonitorRelease = true;
 @property (nonatomic,strong) UIImage *customImage;
 @property (nonatomic,strong) AVPlayerItem *videoPlayerItem;
 @property (nonatomic,strong) AVPlayer *videoPlayer;
-@property (nonatomic,strong) AVPlayerLayer *videoPlayerLayer;
 
 @end
 
 @interface SYWindow : UIWindow
+@end
+
+@interface SYAppStartPlayerView : UIView
+
 @end
 
 @implementation SYAppStart
@@ -32,6 +35,19 @@ BOOL const SYAppStartMonitorRelease = true;
 
 static UIWindow *appStartWindow = nil;
 static SYAppStartConfig *appStartConfig = nil;
+
++ (BOOL)startForKey:(NSString *)keyString
+{
+    NSString *keyName = [NSString stringWithFormat:@"SYAppStart_%@",keyString];
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:keyName]) {
+        [[NSUserDefaults standardUserDefaults] setObject:@YES forKey:keyName];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        return YES;
+    }else
+    {
+        return NO;
+    }
+}
 
 + (SYAppStartConfig *)config {
     if (appStartConfig == nil) {
@@ -70,7 +86,7 @@ static SYAppStartConfig *appStartConfig = nil;
         appStartWindow = [[SYWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
         appStartWindow.backgroundColor = [UIColor clearColor];
         appStartWindow.userInteractionEnabled = YES;
-        appStartWindow.windowLevel = UIWindowLevelAlert + 1;
+        appStartWindow.windowLevel = UIWindowLevelAlert + 10;
         
         appStartWindow.rootViewController = viewController;
     }
@@ -91,7 +107,10 @@ static SYAppStartConfig *appStartConfig = nil;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             if (block) {
                 [self hideWithCustomBlock:block];
-            }else {
+            }else if ([self config].hideAnimationBlock) {
+                [self hideWithCustomBlock:[self config].hideAnimationBlock];
+            }
+            else {
                 [self hideWithCustomBlock:^(UIView *containerView) {
                     [containerView setTransform:CGAffineTransformMakeScale(1.5, 1.5)];
                     [containerView setAlpha:0];
@@ -122,10 +141,10 @@ static SYAppStartConfig *appStartConfig = nil;
 + (void)clear
 {
     appStartWindow.userInteractionEnabled = NO; // iOS 7 才需要这行代码， iOS 7的 UIAlertView 在 show 以后 会持有 显示在最上层的Window。 在这种情况下，只能等UIAlertView释放。 这里才会自动释放
-    appStartWindow.rootViewController = nil;
     [appStartWindow removeFromSuperview];
     appStartWindow = nil;
     appStartConfig.viewCustomBlock = nil;
+    appStartConfig.hideAnimationBlock = nil;
     appStartConfig = nil;
 }
 
@@ -203,13 +222,16 @@ static SYAppStartConfig *appStartConfig = nil;
 }
 
 - (BOOL)shouldAutorotate {
-    return NO;
+    return true;
 }
-
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
-    return UIInterfaceOrientationMaskPortrait;
+    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+        return UIInterfaceOrientationMaskAll;
+    }else {
+        return UIInterfaceOrientationMaskPortrait;
+    }
 }
 
 
@@ -249,24 +271,34 @@ static SYAppStartConfig *appStartConfig = nil;
         [containerView addSubview:imageView];
         
         if ([SYAppStart config].viewCustomBlock != nil) {
-            [SYAppStart config].viewCustomBlock(self.view,containerView);
+            [SYAppStart config].viewCustomBlock(self.view,containerView,imageView);
         }
     }else if (self.videoPlayerItem != nil){
         AVPlayer *player = [AVPlayer playerWithPlayerItem:self.videoPlayerItem];
         player.volume = 1.0f;
+        SYAppStartPlayerView *playerView = [[SYAppStartPlayerView alloc] init];
         
-        AVPlayerLayer *playerLayer = [AVPlayerLayer playerLayerWithPlayer:player];
-        playerLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-        playerLayer.frame = containerView.layer.bounds;
-        [containerView.layer addSublayer:playerLayer];
-        self.videoPlayerLayer = playerLayer;
+        AVPlayerLayer *playerLayer = (AVPlayerLayer *)playerView.layer;
+        [playerLayer setPlayer:player];
+        /**
+         *  AVLayerVideoGravityResizeAspect 基本 Layer 的 Frame 显示合适的大小比例（等比例缩小）
+         *  AVLayerVideoGravityResizeAspectFill 视频 以 自身大小  剧中显示
+         */
+        playerLayer.videoGravity = AVLayerVideoGravityResizeAspect;
+        playerView.frame = containerView.bounds;
+        playerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [containerView addSubview:playerView];
         self.videoPlayer = player;
         [player play];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(playToEndTimeNotification:) name:AVPlayerItemDidPlayToEndTimeNotification object:player.currentItem];
+        
+        if ([SYAppStart config].viewCustomBlock != nil) {
+            [SYAppStart config].viewCustomBlock(self.view,containerView,nil);
+        }
     }
     
-    [UIView animateWithDuration:0.25 animations:^{
+    [UIView animateWithDuration:2.25 animations:^{
         containerView.alpha = 1.0f;
     }];
     
@@ -278,7 +310,6 @@ static SYAppStartConfig *appStartConfig = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     self.customImage = nil;
     self.videoPlayerItem = nil;
-    self.videoPlayerLayer = nil;
     self.videoPlayer = nil;
     
     if (SYAppStartMonitorRelease) {
@@ -288,7 +319,7 @@ static SYAppStartConfig *appStartConfig = nil;
 
 
 - (void)playToEndTimeNotification:(NSNotification *)notification {
-    [self.videoPlayerLayer removeFromSuperlayer];
+    
     [SYAppStart hide:true];
 }
 
@@ -328,6 +359,14 @@ static SYAppStartConfig *appStartConfig = nil;
     if (SYAppStartMonitorRelease) {
         NSLog(@"%@ release",NSStringFromClass([self class]));
     }
+}
+
+@end
+
+@implementation SYAppStartPlayerView
+
++ (Class)layerClass {
+    return [AVPlayerLayer class];
 }
 
 @end

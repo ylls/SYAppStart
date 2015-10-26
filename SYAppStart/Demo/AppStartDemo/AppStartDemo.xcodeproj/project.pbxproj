@@ -162,7 +162,7 @@
 		22E693C017506DAC00D61084 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0460;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "余书懿";
 			};
 			buildConfigurationList = 22E693C317506DAC00D61084 /* Build configuration list for PBXProject "AppStartDemo" */;
@@ -248,6 +248,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -299,6 +300,7 @@
 				GCC_PREFIX_HEADER = "AppStartDemo/AppStartDemo-Prefix.pch";
 				INFOPLIST_FILE = "AppStartDemo/AppStartDemo-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.flyrise.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -313,6 +315,7 @@
 				GCC_PREFIX_HEADER = "AppStartDemo/AppStartDemo-Prefix.pch";
 				INFOPLIST_FILE = "AppStartDemo/AppStartDemo-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.flyrise.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};

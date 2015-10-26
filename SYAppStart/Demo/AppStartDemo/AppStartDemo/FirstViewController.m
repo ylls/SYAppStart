@@ -40,7 +40,7 @@
     if (!_isFirstWillAppear) {
         _isFirstWillAppear = YES;
         [[SYAppStart config] setResourceType:(SYAppStartResourceTypeImage)];
-        [[SYAppStart config] setViewCustomBlock:^(UIView *rootView,UIView *imageContainerView){
+        [[SYAppStart config] setViewCustomBlock:^(UIView *rootView,UIView *imageContainerView,UIImageView *imageView){
         
         }];
         [SYAppStart showWithImage:[UIImage imageNamed:@"Secrren"]];

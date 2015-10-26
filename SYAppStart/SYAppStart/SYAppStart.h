@@ -1,5 +1,5 @@
 //
-//  SYAppStart.h version 2.0 beta
+//  SYAppStart.h version 2.0
 //  FEShareLib
 //
 //  Created by yushuyi on 13-5-25.
@@ -11,7 +11,7 @@
 #import <AVFoundation/AVFoundation.h>
 
 
-typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainerView);
+typedef void(^SYAppStartViewCustomBlock)(UIView *rootView,UIView *imageContainerView,UIImageView *imageView);
 typedef void(^SYAppStartHideCustomBlock)(UIView *containerView);
 
 typedef NS_ENUM(NSInteger, SYAppStartResourceType) {
@@ -47,12 +47,25 @@ typedef NS_ENUM(NSInteger, SYAppStartResourceType) {
  */
 @property (nonatomic,copy) SYAppStartViewCustomBlock viewCustomBlock;
 
+/**
+ *  设置闪屏消失时候的动画
+ */
+@property (nonatomic,copy) SYAppStartHideCustomBlock hideAnimationBlock;
 
 @end
 
 
 
 @interface SYAppStart : NSObject
+
+/**
+ *	只显示一次的键值
+ *
+ *	@param	keyString	键值名称
+ *
+ *	@return	YES 第一次用到这个键值  NO 不是首次加载了
+ */
++ (BOOL)startForKey:(NSString *)keyString;
 
 /**
  *  SYAppStart 配置信息 调用此函数进行修改配置信息
@@ -93,8 +106,10 @@ typedef NS_ENUM(NSInteger, SYAppStartResourceType) {
 + (void)hideWithCustomBlock:(SYAppStartHideCustomBlock)block;
 
 
-
-
+/**
+ *  清理
+ */
++ (void)clear;
 
 
 /**
@@ -111,6 +126,9 @@ typedef NS_ENUM(NSInteger, SYAppStartResourceType) {
  *  @return UIView
  */
 + (UIView *)getDefaultLaunchView;
+
+
++ (UIViewController *)getDefaultLaunchStoryboardViewController;
 
 
 @end
